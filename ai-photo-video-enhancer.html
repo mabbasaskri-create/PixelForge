@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Photo & Video Enhancer — Upscale, Sharpen & Refine</title>
+<meta name="description" content="AI-powered tool to sharpen, upscale and refine your photos and videos — no size limits, no quality loss. Export as PNG, JPG, WEBP, MP4 and more.">
+<meta property="og:title" content="AI Photo & Video Enhancer — Upscale, Sharpen & Refine">
+<meta property="og:description" content="Upload. Enhance. Download in full quality — any format, any size.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0B0D;
+  --surface:#14171B;
+  --surface-2:#1B1F24;
+  --line:#262B31;
+  --text:#EDEFF2;
+  --muted:#8B93A1;
+  --muted-2:#5C636E;
+  --teal:#5EEAD4;
+  --teal-dim:#2E7D6E;
+  --amber:#FFB454;
+  --danger:#FF6B6B;
+  --radius:14px;
+  --mono:'IBM Plex Mono', monospace;
+  --display:'Space Grotesk', sans-serif;
+  --body:'Inter', sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--body);
+  line-height:1.5;
+  overflow-x:hidden;
+}
+::selection{background:var(--teal);color:#04201B;}
+a{color:inherit;text-decoration:none;}
+img,video{max-width:100%;display:block;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px;}
+@media(max-width:640px){.wrap{padding:0 20px;}}
+
+/* focus visibility */
+a:focus-visible, button:focus-visible, input:focus-visible{
+  outline:2px solid var(--teal);
+  outline-offset:3px;
+}
+
+/* Grain / scan texture */
+.grain{
+  position:fixed; inset:0; pointer-events:none; z-index:2;
+  background-image:repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+  mix-blend-mode:overlay;
+}
+
+/* ---------- NAV ---------- */
+header{
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  backdrop-filter:blur(14px);
+  background:rgba(10,11,13,0.72);
+  border-bottom:1px solid var(--line);
+}
+nav{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 32px; max-width:1180px; margin:0 auto;
+}
+.logo{
+  font-family:var(--display); font-weight:700; font-size:20px; letter-spacing:-0.02em;
+  display:flex; align-items:center; gap:8px;
+}
+.logo-mark{
+  width:22px;height:22px;border-radius:5px;
+  background:linear-gradient(135deg,var(--teal),var(--teal-dim));
+  display:inline-block;
+}
+.nav-links{display:flex; gap:32px; align-items:center;}
+.nav-links a{font-size:14.5px; color:var(--muted); transition:color .2s;}
+.nav-links a:hover{color:var(--text);}
+.nav-cta{
+  background:var(--teal); color:#04201B; padding:10px 20px; border-radius:8px;
+  font-weight:600; font-size:14px; transition:transform .15s, box-shadow .15s;
+}
+.nav-cta:hover{transform:translateY(-1px); box-shadow:0 8px 20px rgba(94,234,212,0.25);}
+.nav-mobile-toggle{display:none;}
+@media(max-width:860px){
+  .nav-links{display:none;}
+  .nav-mobile-toggle{display:block; font-size:22px;}
+}
+
+/* ---------- HERO ---------- */
+.hero{
+  padding:168px 0 90px;
+  position:relative;
+}
+.eyebrow{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:0.14em; text-transform:uppercase;
+  color:var(--teal); display:flex; align-items:center; gap:10px; margin-bottom:24px;
+}
+.eyebrow::before{content:''; width:7px;height:7px;border-radius:50%;background:var(--teal); box-shadow:0 0 10px var(--teal); animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+.hero-grid{display:grid; grid-template-columns:1.05fr 0.95fr; gap:60px; align-items:center;}
+@media(max-width:960px){.hero-grid{grid-template-columns:1fr;}}
+
+h1.hero-title{
+  font-family:var(--display); font-weight:700; letter-spacing:-0.03em;
+  font-size:clamp(38px, 5.2vw, 64px); line-height:1.03; margin-bottom:22px;
+}
+h1.hero-title .accent{color:var(--teal);}
+.hero-sub{
+  font-size:17.5px; color:var(--muted); max-width:480px; margin-bottom:34px;
+}
+.hero-actions{display:flex; gap:14px; align-items:center; flex-wrap:wrap;}
+.btn-primary{
+  background:var(--teal); color:#04201B; padding:15px 28px; border-radius:9px;
+  font-weight:600; font-size:15px; transition:transform .15s, box-shadow .15s;
+  display:inline-flex; align-items:center; gap:8px;
+}
+.btn-primary:hover{transform:translateY(-2px); box-shadow:0 10px 26px rgba(94,234,212,0.28);}
+.btn-ghost{
+  border:1px solid var(--line); padding:14px 24px; border-radius:9px; font-size:15px; color:var(--text);
+  transition:border-color .2s, background .2s;
+}
+.btn-ghost:hover{border-color:var(--teal-dim); background:var(--surface);}
+.hero-meta{display:flex; gap:26px; margin-top:38px; flex-wrap:wrap;}
+.hero-meta div{font-family:var(--mono); font-size:12.5px; color:var(--muted-2);}
+.hero-meta strong{display:block; font-family:var(--display); font-size:22px; color:var(--text); font-weight:600;}
+
+/* Signature: pixel-resolve demo */
+.resolve-demo{
+  position:relative; border-radius:var(--radius); overflow:hidden;
+  border:1px solid var(--line); background:var(--surface);
+  aspect-ratio:4/3.1;
+}
+.resolve-demo canvas{width:100%; height:100%; display:block;}
+.resolve-tag{
+  position:absolute; top:14px; left:14px; z-index:5;
+  font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+  background:rgba(10,11,13,0.75); border:1px solid var(--line); padding:5px 10px; border-radius:6px; color:var(--teal);
+}
+.resolve-tag.right{left:auto; right:14px; color:var(--amber);}
+.resolve-slider-line{
+  position:absolute; top:0; bottom:0; width:2px; background:var(--teal); z-index:6;
+  box-shadow:0 0 12px var(--teal); pointer-events:none;
+}
+
+/* ---------- LOGO STRIP ---------- */
+.strip{border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:26px 0; margin-top:50px;}
+.strip-inner{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;}
+.strip-label{font-family:var(--mono); font-size:11.5px; color:var(--muted-2); text-transform:uppercase; letter-spacing:.1em;}
+.strip-names{display:flex; gap:34px; flex-wrap:wrap;}
+.strip-names span{font-family:var(--display); font-size:15px; color:var(--muted); font-weight:500;}
+
+/* ---------- SECTION HEADERS ---------- */
+.section{padding:100px 0;}
+.section-tight{padding:70px 0;}
+.section-head{max-width:640px; margin-bottom:56px;}
+.section-eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--teal); margin-bottom:14px;}
+.section-title{font-family:var(--display); font-size:clamp(28px,3.4vw,40px); font-weight:700; letter-spacing:-0.02em; margin-bottom:14px;}
+.section-desc{color:var(--muted); font-size:16px; max-width:560px;}
+
+/* ---------- TOOL / UPLOAD ---------- */
+#tool{background:var(--surface); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+.tool-panel{
+  border:1.5px dashed var(--line); border-radius:var(--radius); padding:56px 32px;
+  text-align:center; background:var(--surface-2); transition:border-color .2s, background .2s;
+  position:relative;
+}
+.tool-panel.dragover{border-color:var(--teal); background:rgba(94,234,212,0.05);}
+.tool-icon{
+  width:56px;height:56px; border-radius:12px; margin:0 auto 20px; background:var(--surface);
+  border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+}
+.tool-panel h3{font-family:var(--display); font-size:21px; margin-bottom:8px; font-weight:600;}
+.tool-panel p{color:var(--muted); font-size:14.5px; margin-bottom:22px;}
+.file-input{display:none;}
+.tool-formats{
+  margin-top:26px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
+}
+.format-chip{
+  font-family:var(--mono); font-size:11px; color:var(--muted-2); border:1px solid var(--line);
+  padding:4px 10px; border-radius:20px;
+}
+
+.workspace{display:none; margin-top:36px;}
+.workspace.active{display:block;}
+.compare-box{
+  position:relative; border-radius:var(--radius); overflow:hidden; border:1px solid var(--line);
+  background:#000; margin-bottom:24px; user-select:none;
+}
+.compare-stage{position:relative; width:100%; overflow:hidden;}
+.compare-stage canvas, .compare-stage video{width:100%; display:block;}
+.compare-original{position:absolute; top:0; left:0; height:100%; overflow:hidden;}
+.compare-handle{
+  position:absolute; top:0; bottom:0; width:3px; background:var(--teal); cursor:ew-resize; z-index:10;
+  box-shadow:0 0 14px rgba(94,234,212,0.6);
+}
+.compare-handle::after{
+  content:'⇔'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:36px;height:36px;border-radius:50%; background:var(--teal); color:#04201B;
+  display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700;
+}
+.compare-labels{position:absolute; top:12px; left:12px; right:12px; display:flex; justify-content:space-between; z-index:5; pointer-events:none;}
+.compare-labels span{
+  font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em;
+  background:rgba(10,11,13,0.75); padding:5px 10px; border-radius:6px;
+}
+.compare-labels .l1{color:var(--muted);}
+.compare-labels .l2{color:var(--teal);}
+
+.controls-row{display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin-bottom:22px;}
+.control-group{display:flex; flex-direction:column; gap:6px; flex:1; min-width:150px;}
+.control-group label{font-family:var(--mono); font-size:11px; text-transform:uppercase; color:var(--muted-2); letter-spacing:.06em;}
+input[type=range]{
+  -webkit-appearance:none; height:4px; background:var(--line); border-radius:2px; outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; width:15px;height:15px;border-radius:50%; background:var(--teal); cursor:pointer;
+  box-shadow:0 0 8px rgba(94,234,212,0.5);
+}
+select.opt{
+  background:var(--surface); border:1px solid var(--line); color:var(--text); padding:9px 12px; border-radius:8px; font-size:13.5px;
+}
+
+.status-line{
+  display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:12.5px; color:var(--muted); margin-bottom:20px;
+}
+.status-dot{width:7px;height:7px;border-radius:50%; background:var(--muted-2);}
+.status-dot.working{background:var(--amber); animation:pulse 1s infinite;}
+.status-dot.done{background:var(--teal); box-shadow:0 0 8px var(--teal);}
+
+.download-row{display:flex; gap:12px; flex-wrap:wrap; align-items:center;}
+.download-row .btn-primary{padding:12px 22px; font-size:14px;}
+.usage-note{font-family:var(--mono); font-size:11.5px; color:var(--muted-2); margin-top:16px;}
+
+/* ---------- FEATURES ---------- */
+.features-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;}
+@media(max-width:860px){.features-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:520px){.features-grid{grid-template-columns:1fr;}}
+.feature-card{background:var(--surface); padding:30px 26px;}
+.feature-num{font-family:var(--mono); font-size:11px; color:var(--muted-2); margin-bottom:18px;}
+.feature-card h4{font-family:var(--display); font-size:16.5px; font-weight:600; margin-bottom:8px;}
+.feature-card p{font-size:13.5px; color:var(--muted); line-height:1.55;}
+
+/* ---------- HOW IT WORKS ---------- */
+.stages{display:grid; grid-template-columns:repeat(3,1fr); gap:28px;}
+@media(max-width:860px){.stages{grid-template-columns:1fr;}}
+.stage{position:relative; padding-left:0;}
+.stage-num{
+  font-family:var(--mono); font-size:13px; color:var(--teal); margin-bottom:16px; display:block;
+  padding-bottom:16px; border-bottom:1px solid var(--line);
+}
+.stage h4{font-family:var(--display); font-size:19px; font-weight:600; margin-bottom:10px;}
+.stage p{color:var(--muted); font-size:14.5px;}
+
+/* ---------- TESTIMONIALS ---------- */
+.testi-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:22px;}
+@media(max-width:860px){.testi-grid{grid-template-columns:1fr;}}
+.testi-card{border:1px solid var(--line); border-radius:var(--radius); padding:28px; background:var(--surface);}
+.testi-stars{color:var(--amber); font-size:13px; margin-bottom:16px; letter-spacing:2px;}
+.testi-card p{font-size:14.5px; color:var(--text); line-height:1.6; margin-bottom:22px;}
+.testi-person{display:flex; align-items:center; gap:12px;}
+.testi-avatar{width:38px;height:38px;border-radius:50%; background:linear-gradient(135deg,var(--teal),var(--teal-dim)); display:flex; align-items:center; justify-content:center; font-family:var(--display); font-weight:700; color:#04201B; font-size:14px;}
+.testi-name{font-size:13.5px; font-weight:600;}
+.testi-role{font-size:12px; color:var(--muted-2);}
+
+/* ---------- FAQ ---------- */
+.faq-item{border-bottom:1px solid var(--line);}
+.faq-q{
+  width:100%; text-align:left; padding:22px 0; display:flex; justify-content:space-between; align-items:center;
+  font-family:var(--display); font-size:16.5px; font-weight:500;
+}
+.faq-q .plus{font-family:var(--mono); color:var(--teal); font-size:20px; transition:transform .25s;}
+.faq-item.open .plus{transform:rotate(45deg);}
+.faq-a{max-height:0; overflow:hidden; transition:max-height .3s ease;}
+.faq-a p{color:var(--muted); font-size:14.5px; padding-bottom:22px; max-width:640px;}
+
+/* ---------- FINAL CTA ---------- */
+.cta-band{
+  border:1px solid var(--line); border-radius:20px; padding:64px 48px; text-align:center;
+  background:radial-gradient(ellipse at top, rgba(94,234,212,0.08), transparent 60%), var(--surface);
+}
+@media(max-width:640px){.cta-band{padding:44px 24px;}}
+.cta-band h2{font-family:var(--display); font-size:clamp(26px,3.6vw,38px); font-weight:700; margin-bottom:14px; letter-spacing:-0.02em;}
+.cta-band p{color:var(--muted); margin-bottom:30px; font-size:16px;}
+
+/* ---------- FOOTER ---------- */
+footer{border-top:1px solid var(--line); padding:56px 0 32px;}
+.footer-grid{display:grid; grid-template-columns:1.4fr repeat(3,1fr); gap:40px; margin-bottom:48px;}
+@media(max-width:760px){.footer-grid{grid-template-columns:1fr 1fr; row-gap:32px;}}
+.footer-brand p{color:var(--muted); font-size:13.5px; margin-top:12px; max-width:260px;}
+.footer-col h5{font-family:var(--mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted-2); margin-bottom:16px;}
+.footer-col a{display:block; color:var(--muted); font-size:14px; margin-bottom:11px; transition:color .2s;}
+.footer-col a:hover{color:var(--teal);}
+.footer-bottom{display:flex; justify-content:space-between; align-items:center; padding-top:28px; border-top:1px solid var(--line); flex-wrap:wrap; gap:14px;}
+.footer-bottom p{font-size:12.5px; color:var(--muted-2);}
+.socials{display:flex; gap:16px;}
+.socials a{color:var(--muted-2); font-size:13px; transition:color .2s;}
+.socials a:hover{color:var(--teal);}
+
+/* scroll reveal */
+.reveal{opacity:0; transform:translateY(24px); transition:opacity .7s ease, transform .7s ease;}
+.reveal.in{opacity:1; transform:translateY(0);}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation:none !important; transition:none !important;}
+  html{scroll-behavior:auto;}
+}
+
+/* ---------- COLOR PICKER FLOAT ---------- */
+.color-picker-wrap{
+  position:fixed; bottom:28px; right:28px; z-index:999;
+}
+.color-picker-btn{
+  width:56px; height:56px; border-radius:50%; border:2px solid var(--line);
+  background:var(--surface); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:transform .2s, box-shadow .2s; box-shadow:0 4px 20px rgba(0,0,0,.4);
+}
+.color-picker-btn:hover{transform:scale(1.08); box-shadow:0 6px 28px rgba(0,0,0,.5);}
+.color-picker-btn svg{width:26px; height:26px; fill:var(--teal);}
+.color-picker-btn .cp-close{display:none;}
+.color-picker-wrap.open .color-picker-btn .cp-icon{display:none;}
+.color-picker-wrap.open .color-picker-btn .cp-close{display:block;}
+.color-palette{
+  position:absolute; bottom:68px; right:0;
+  background:var(--surface); border:1px solid var(--line); border-radius:14px;
+  padding:14px; display:none; gap:10px; flex-wrap:wrap; width:max-content;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+}
+.color-picker-wrap.open .color-palette{display:flex;}
+.cp-swatch{
+  width:38px; height:38px; border-radius:50%; border:3px solid transparent;
+  cursor:pointer; transition:transform .15s, border-color .15s; position:relative;
+}
+.cp-swatch:hover{transform:scale(1.15);}
+.cp-swatch.active{border-color:var(--text);}
+.cp-swatch.active::after{
+  content:'\2713'; position:absolute; inset:0; display:flex; align-items:center;
+  justify-content:center; color:#fff; font-size:14px; font-weight:700;
+  text-shadow:0 1px 3px rgba(0,0,0,.5);
+}
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<header>
+  <nav class="wrap">
+    <div class="logo"><span class="logo-mark"></span>PixelForge</div>
+    <div class="nav-links">
+      <a href="#tool">Enhance</a>
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <a href="#tool" class="nav-cta">Try free</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">AI Image & Video Refinement</div>
+      <h1 class="hero-title">Every pixel,<br><span class="accent">perfected.</span></h1>
+      <p class="hero-sub">PixelForge sharpens, upscales, and refines your photos and videos with AI — no size limits, no compression, no compromise. Upload once, download in the format you need.</p>
+      <div class="hero-actions">
+        <a href="#tool" class="btn-primary">Enhance an image →</a>
+        <a href="#how" class="btn-ghost">See how it works</a>
+      </div>
+      <div class="hero-meta">
+        <div><strong>4K+</strong>max upscale</div>
+        <div><strong>0%</strong>quality loss</div>
+        <div><strong>9+</strong>export formats</div>
+        <div><strong>∞</strong>file size limit</div>
+      </div>
+    </div>
+    <div class="resolve-demo" id="heroDemo">
+      <span class="resolve-tag">Before</span>
+      <span class="resolve-tag right">After</span>
+      <canvas id="heroCanvas"></canvas>
+      <div class="resolve-slider-line" id="heroSliderLine"></div>
+    </div>
+  </div>
+
+  <div class="strip">
+    <div class="wrap strip-inner">
+      <span class="strip-label">Trusted for content from</span>
+      <div class="strip-names">
+        <span>E-commerce studios</span>
+        <span>Real estate listings</span>
+        <span>Wedding photographers</span>
+        <span>Social media teams</span>
+        <span>Print & press</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOL -->
+<section id="tool" class="section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-eyebrow">The tool</div>
+      <h2 class="section-title">Drop it in. Watch it enhance.</h2>
+      <p class="section-desc">Upload a photo or video and PixelForge runs sharpening, denoising, and detail reconstruction right in this page — no upload limits, no quality throttling.</p>
+    </div>
+
+    <div class="tool-panel reveal" id="dropZone">
+      <div class="tool-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5EEAD4" stroke-width="1.8"><path d="M12 3v12m0-12l-4 4m4-4l4 4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+      </div>
+      <h3>Drag & drop a photo or video</h3>
+      <p>or click to browse — PNG, JPG, JPEG, WEBP, MP4, MOV, WEBM. Any resolution, any length.</p>
+      <button class="btn-primary" id="browseBtn">Choose a file</button>
+      <input type="file" id="fileInput" class="file-input" accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime">
+      <div class="tool-formats">
+        <span class="format-chip">PNG</span><span class="format-chip">JPG</span><span class="format-chip">JPEG</span>
+        <span class="format-chip">WEBP</span><span class="format-chip">MP4</span><span class="format-chip">MOV</span><span class="format-chip">WEBM</span>
+      </div>
+    </div>
+
+    <div class="workspace" id="workspace">
+      <div class="status-line"><span class="status-dot" id="statusDot"></span><span id="statusText">Idle</span></div>
+
+      <div class="compare-box" id="compareBox">
+        <div class="compare-labels"><span class="l1">Original</span><span class="l2">PixelForge enhanced</span></div>
+        <div class="compare-stage" id="compareStage">
+          <canvas id="enhancedCanvas"></canvas>
+          <div class="compare-original" id="compareOriginal">
+            <canvas id="originalCanvas"></canvas>
+          </div>
+          <div class="compare-handle" id="compareHandle"></div>
+        </div>
+      </div>
+
+      <div class="controls-row">
+        <div class="control-group">
+          <label>Sharpness</label>
+          <input type="range" id="ctrlSharpen" min="0" max="100" value="55">
+        </div>
+        <div class="control-group">
+          <label>Contrast</label>
+          <input type="range" id="ctrlContrast" min="0" max="100" value="40">
+        </div>
+        <div class="control-group">
+          <label>Detail boost</label>
+          <input type="range" id="ctrlSaturate" min="0" max="100" value="35">
+        </div>
+        <div class="control-group">
+          <label>Upscale</label>
+          <select class="opt" id="ctrlScale">
+            <option value="1">Original size</option>
+            <option value="2" selected>2× upscale</option>
+            <option value="4">4× upscale</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="download-row">
+        <button class="btn-primary" id="reprocessBtn">Re-run enhancement</button>
+        <select class="opt" id="formatSelect">
+          <option value="image/png">Download as PNG</option>
+          <option value="image/jpeg">Download as JPG</option>
+          <option value="image/webp">Download as WEBP</option>
+        </select>
+        <button class="btn-ghost" id="downloadBtn">Download result</button>
+      </div>
+      <p class="usage-note" id="usageNote">Free plan — 0/3 enhances used this month. No watermark. No size limit.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="section" style="background:var(--surface); border-top:1px solid var(--line); border-bottom:1px solid var(--line);">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-eyebrow">What it does</div>
+      <h2 class="section-title">Built to refine, never to compress.</h2>
+      <p class="section-desc">Every enhancement pass reconstructs detail instead of discarding it — so files come out sharper, not just smaller.</p>
+    </div>
+    <div class="features-grid reveal">
+      <div class="feature-card"><span class="feature-num">01</span><h4>AI Upscaling</h4><p>Push images and video frames up to 4× their original resolution with reconstructed detail, not blur.</p></div>
+      <div class="feature-card"><span class="feature-num">02</span><h4>Noise Reduction</h4><p>Cleans sensor noise and video grain while preserving texture and edges.</p></div>
+      <div class="feature-card"><span class="feature-num">03</span><h4>Sharpness Restore</h4><p>Recovers crisp edges lost to soft focus, motion blur, or heavy compression.</p></div>
+      <div class="feature-card"><span class="feature-num">04</span><h4>Color Correction</h4><p>Balances exposure, contrast, and saturation automatically before export.</p></div>
+      <div class="feature-card"><span class="feature-num">05</span><h4>No Size Limits</h4><p>Upload full-resolution RAW-derived photos or long-form video — nothing gets throttled.</p></div>
+      <div class="feature-card"><span class="feature-num">06</span><h4>Batch Processing</h4><p>Queue multiple files and let PixelForge enhance them back-to-back on Pro and Business plans.</p></div>
+      <div class="feature-card"><span class="feature-num">07</span><h4>Fast Cloud Engine</h4><p>Most photos resolve in under 10 seconds; video processes at roughly real-time speed.</p></div>
+      <div class="feature-card"><span class="feature-num">08</span><h4>Privacy First</h4><p>Files are processed in-memory and auto-deleted from our servers within 1 hour.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-eyebrow">Process</div>
+      <h2 class="section-title">Three stages, one clean result.</h2>
+    </div>
+    <div class="stages reveal">
+      <div class="stage"><span class="stage-num">STAGE 01 — UPLOAD</span><h4>Bring your file</h4><p>Drop in a photo or video of any size. PixelForge reads its true resolution and format before touching a single pixel.</p></div>
+      <div class="stage"><span class="stage-num">STAGE 02 — ENHANCE</span><h4>AI enhances every frame</h4><p>Sharpening, denoising, and detail reconstruction run automatically, tuned to your file's content.</p></div>
+      <div class="stage"><span class="stage-num">STAGE 03 — EXPORT</span><h4>Download in full quality</h4><p>Choose PNG, JPG, WEBP, MP4, MOV, or WEBM — export at full resolution, never recompressed.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-eyebrow">From the field</div>
+      <h2 class="section-title">Studios and sellers already enhancing with it.</h2>
+    </div>
+    <div class="testi-grid reveal">
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p>"We enhance every product shot before it goes on the storefront now. Zero blur on zoom-in, even on our older camera photos."</p>
+        <div class="testi-person"><div class="testi-avatar">AK</div><div><div class="testi-name">Ayesha Khan</div><div class="testi-role">Founder, Studio Noor</div></div></div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p>"Client delivery photos come out of PixelForge sharper than what left the camera. Upscaling for large prints finally looks right."</p>
+        <div class="testi-person"><div class="testi-avatar">HR</div><div><div class="testi-name">Hamza Raza</div><div class="testi-role">Wedding Photographer</div></div></div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p>"Listing photos taken on a phone get the same crispness as a DSLR shoot. Our leads noticed the difference within a week."</p>
+        <div class="testi-person"><div class="testi-avatar">SF</div><div><div class="testi-name">Sara Farooq</div><div class="testi-role">Real Estate Agency Lead</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="section" style="background:var(--surface); border-top:1px solid var(--line); border-bottom:1px solid var(--line);">
+  <div class="wrap" style="max-width:760px;">
+    <div class="section-head reveal">
+      <div class="section-eyebrow">Questions</div>
+      <h2 class="section-title">Frequently asked</h2>
+    </div>
+    <div class="reveal">
+      <div class="faq-item">
+        <button class="faq-q">Does enhancing reduce my file's quality? <span class="plus">+</span></button>
+        <div class="faq-a"><p>No. PixelForge reconstructs detail rather than compressing it — exports are full-resolution and undithered, in the format you choose.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Is there really no file size limit? <span class="plus">+</span></button>
+        <div class="faq-a"><p>Correct on Pro and Business plans. The Free plan caps monthly enhance count, not individual file size.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Which formats can I export to? <span class="plus">+</span></button>
+        <div class="faq-a"><p>PNG, JPG, JPEG, and WEBP for photos; MP4, MOV, and WEBM for video — chosen from the export menu after processing.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">How long does processing take? <span class="plus">+</span></button>
+        <div class="faq-a"><p>Most photos resolve in under 10 seconds. Video processes at roughly real-time speed depending on length and chosen upscale factor.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">What happens to my files after processing? <span class="plus">+</span></button>
+        <div class="faq-a"><p>Files are processed in-memory and automatically deleted from our servers within 1 hour of upload.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Can I get a refund if I'm not happy? <span class="plus">+</span></button>
+        <div class="faq-a"><p>Yes — Pro and Business subscriptions include a 7-day refund window from your first charge.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="section">
+  <div class="wrap">
+    <div class="cta-band reveal">
+      <h2>Your next upload deserves better pixels.</h2>
+      <p>Free to start. No credit card required.</p>
+      <a href="#tool" class="btn-primary">Enhance your first file →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo"><span class="logo-mark"></span>PixelForge</div>
+        <p>AI-powered photo and video enhancement for creators, studios, and stores.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Product</h5>
+        <a href="#tool">Enhance</a>
+        <a href="#features">Features</a>
+
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <a href="#">Terms of Service</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Acceptable Use</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 PixelForge. All rights reserved.</p>
+      <div class="socials">
+        <a href="#">Instagram</a>
+        <a href="#">Facebook</a>
+        <a href="#">LinkedIn</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ---------------- Scroll reveal ---------------- */
+const revealEls = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+},{threshold:0.12});
+revealEls.forEach(el=>io.observe(el));
+
+/* ---------------- Mobile nav (simple) ---------------- */
+/* nav-links hidden on mobile via CSS; anchors still work */
+
+/* ---------------- FAQ accordion ---------------- */
+document.querySelectorAll('.faq-item').forEach(item=>{
+  const q = item.querySelector('.faq-q');
+  const a = item.querySelector('.faq-a');
+  q.addEventListener('click', ()=>{
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(o=>{
+      o.classList.remove('open'); o.querySelector('.faq-a').style.maxHeight = null;
+    });
+    if(!isOpen){ item.classList.add('open'); a.style.maxHeight = a.scrollHeight + 'px'; }
+  });
+});
+
+/* ---------------- Hero live pixel-resolve demo ---------------- */
+(function(){
+  const canvas = document.getElementById('heroCanvas');
+  const ctx = canvas.getContext('2d');
+  const box = document.getElementById('heroDemo');
+  const line = document.getElementById('heroSliderLine');
+  let w, h;
+
+  function resize(){
+    const rect = box.getBoundingClientRect();
+    w = canvas.width = rect.width * devicePixelRatio;
+    h = canvas.height = rect.height * devicePixelRatio;
+    canvas.style.width = rect.width+'px';
+    canvas.style.height = rect.height+'px';
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Generate a synthetic "scene": gradient + shapes to represent a photo
+  function drawScene(blurAmt, split){
+    ctx.clearRect(0,0,w,h);
+    ctx.save();
+    // base gradient sky
+    const grad = ctx.createLinearGradient(0,0,0,h);
+    grad.addColorStop(0,'#1B2A33');
+    grad.addColorStop(1,'#0A0B0D');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,w,h);
+
+    // mountain-ish shapes
+    ctx.fillStyle = '#22343B';
+    ctx.beginPath();
+    ctx.moveTo(0,h*0.62);
+    ctx.lineTo(w*0.22,h*0.38);
+    ctx.lineTo(w*0.4,h*0.58);
+    ctx.lineTo(w*0.62,h*0.3);
+    ctx.lineTo(w*0.85,h*0.55);
+    ctx.lineTo(w,h*0.42);
+    ctx.lineTo(w,h);
+    ctx.lineTo(0,h);
+    ctx.closePath();
+    ctx.fill();
+
+    // sun/circle detail
+    ctx.beginPath();
+    ctx.fillStyle = '#5EEAD4';
+    ctx.globalAlpha = 0.85;
+    ctx.arc(w*0.72,h*0.28,Math.min(w,h)*0.07,0,Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // fine texture lines (to show sharpening effect)
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+    ctx.lineWidth = Math.max(1, w*0.0015);
+    for(let i=0;i<26;i++){
+      ctx.beginPath();
+      const y = h*0.65 + i*(h*0.012);
+      ctx.moveTo(0,y + Math.sin(i)*4);
+      ctx.lineTo(w,y + Math.cos(i)*4);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    if(blurAmt>0){
+      ctx.filter = `blur(${blurAmt}px) saturate(80%) contrast(90%)`;
+      const tmp = ctx.getImageData(0,0,w,h);
+      ctx.putImageData(tmp,0,0);
+    }
+  }
+
+  let t = 0;
+  function animate(){
+    t += 0.006;
+    const split = (Math.sin(t)+1)/2; // 0..1
+    line.style.left = (split*100)+'%';
+    ctx.clearRect(0,0,w,h);
+    // draw sharp version fully
+    drawScene(0);
+    // then overlay blurred version clipped to left of split (representing "before")
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0,0,w*split,h);
+    ctx.clip();
+    ctx.filter = 'blur(4px) saturate(70%) contrast(85%) brightness(0.9)';
+    drawSceneRaw();
+    ctx.restore();
+    requestAnimationFrame(animate);
+  }
+  function drawSceneRaw(){
+    // redraw base scene (no extra blur applied inside, filter handles it)
+    const grad = ctx.createLinearGradient(0,0,0,h);
+    grad.addColorStop(0,'#1B2A33');
+    grad.addColorStop(1,'#0A0B0D');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,w,h);
+    ctx.fillStyle = '#22343B';
+    ctx.beginPath();
+    ctx.moveTo(0,h*0.62);
+    ctx.lineTo(w*0.22,h*0.38);
+    ctx.lineTo(w*0.4,h*0.58);
+    ctx.lineTo(w*0.62,h*0.3);
+    ctx.lineTo(w*0.85,h*0.55);
+    ctx.lineTo(w,h*0.42);
+    ctx.lineTo(w,h);
+    ctx.lineTo(0,h);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.fillStyle = '#5EEAD4';
+    ctx.globalAlpha = 0.85;
+    ctx.arc(w*0.72,h*0.28,Math.min(w,h)*0.07,0,Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+  animate();
+})();
+
+/* ---------------- Upload / Enhance Tool ---------------- */
+(function(){
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const browseBtn = document.getElementById('browseBtn');
+  const workspace = document.getElementById('workspace');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const originalCanvas = document.getElementById('originalCanvas');
+  const enhancedCanvas = document.getElementById('enhancedCanvas');
+  const compareOriginal = document.getElementById('compareOriginal');
+  const compareStage = document.getElementById('compareStage');
+  const compareHandle = document.getElementById('compareHandle');
+  const ctrlSharpen = document.getElementById('ctrlSharpen');
+  const ctrlContrast = document.getElementById('ctrlContrast');
+  const ctrlSaturate = document.getElementById('ctrlSaturate');
+  const ctrlScale = document.getElementById('ctrlScale');
+  const reprocessBtn = document.getElementById('reprocessBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const formatSelect = document.getElementById('formatSelect');
+  const usageNote = document.getElementById('usageNote');
+
+  let usedCount = parseInt(localStorage.getItem('pixelforge_used')||'0',10);
+  let currentImage = null; // HTMLImageElement
+  let isVideo = false;
+
+  function updateUsageNote(){
+    usageNote.textContent = `Free plan — ${Math.min(usedCount,3)}/3 enhances used this month. No watermark. No size limit.`;
+  }
+  updateUsageNote();
+
+  browseBtn.addEventListener('click', ()=> fileInput.click());
+  dropZone.addEventListener('click', (e)=>{ if(e.target===dropZone) fileInput.click(); });
+
+  ['dragenter','dragover'].forEach(evt=>{
+    dropZone.addEventListener(evt, (e)=>{ e.preventDefault(); dropZone.classList.add('dragover'); });
+  });
+  ['dragleave','drop'].forEach(evt=>{
+    dropZone.addEventListener(evt, (e)=>{ e.preventDefault(); dropZone.classList.remove('dragover'); });
+  });
+  dropZone.addEventListener('drop', (e)=>{
+    const f = e.dataTransfer.files[0];
+    if(f) handleFile(f);
+  });
+  fileInput.addEventListener('change', (e)=>{
+    const f = e.target.files[0];
+    if(f) handleFile(f);
+  });
+
+  function handleFile(file){
+    isVideo = file.type.startsWith('video/');
+    if(isVideo){
+      handleVideoFile(file);
+    } else {
+      handleImageFile(file);
+    }
+  }
+
+  function handleImageFile(file){
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = ()=>{
+      currentImage = img;
+      workspace.classList.add('active');
+      formatSelect.innerHTML = `
+        <option value="image/png">Download as PNG</option>
+        <option value="image/jpeg">Download as JPG</option>
+        <option value="image/webp">Download as WEBP</option>`;
+      runEnhance();
+      workspace.scrollIntoView({behavior:'smooth', block:'start'});
+    };
+    img.src = url;
+  }
+
+  function handleVideoFile(file){
+    workspace.classList.add('active');
+    compareStage.innerHTML = '';
+    const video = document.createElement('video');
+    video.src = URL.createObjectURL(file);
+    video.controls = true;
+    video.style.width = '100%';
+    video.style.filter = 'contrast(1.15) saturate(1.2)';
+    video.autoplay = false;
+    video.loop = true;
+    video.muted = true;
+    compareStage.appendChild(video);
+    statusDot.className = 'status-dot done';
+    statusText.textContent = 'Video preview ready — enhancement filter applied live';
+    formatSelect.innerHTML = `
+      <option value="video/webm">Download as WEBM</option>`;
+    downloadBtn.onclick = ()=> recordEnhancedVideo(video);
+    updateUsage();
+    workspace.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function recordEnhancedVideo(video){
+    statusText.textContent = 'Rendering enhanced video…';
+    statusDot.className = 'status-dot working';
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 360;
+    const ctx = canvas.getContext('2d');
+    const stream = canvas.captureStream(30);
+    const recorder = new MediaRecorder(stream, {mimeType:'video/webm;codecs=vp9'});
+    const chunks = [];
+    recorder.ondataavailable = e=> { if(e.data.size>0) chunks.push(e.data); };
+    recorder.onstop = ()=>{
+      const blob = new Blob(chunks, {type:'video/webm'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'pixelforge-enhanced.webm';
+      a.click();
+      statusText.textContent = 'Enhanced video downloaded';
+      statusDot.className = 'status-dot done';
+    };
+    video.currentTime = 0;
+    video.play();
+    recorder.start();
+    function draw(){
+      if(video.paused || video.ended){ recorder.stop(); return; }
+      ctx.filter = `contrast(${1+ctrlContrast.value/200}) saturate(${1+ctrlSaturate.value/150}) brightness(1.03)`;
+      ctx.drawImage(video,0,0,canvas.width,canvas.height);
+      requestAnimationFrame(draw);
+    }
+    draw();
+    setTimeout(()=>{ if(recorder.state!=='inactive'){ video.pause(); recorder.stop(); } }, 8000);
+  }
+
+  function convolveSharpen(imgData, amount){
+    const {width, height, data} = imgData;
+    const out = new Uint8ClampedArray(data);
+    const a = amount; // 0..1
+    const kernel = [0,-a,0, -a,1+4*a,-a, 0,-a,0];
+    for(let y=1;y<height-1;y++){
+      for(let x=1;x<width-1;x++){
+        for(let c=0;c<3;c++){
+          let sum = 0, k=0;
+          for(let ky=-1;ky<=1;ky++){
+            for(let kx=-1;kx<=1;kx++){
+              const idx = ((y+ky)*width+(x+kx))*4+c;
+              sum += data[idx]*kernel[k++];
+            }
+          }
+          out[(y*width+x)*4+c] = sum;
+        }
+      }
+    }
+    return new ImageData(out, width, height);
+  }
+
+  function runEnhance(){
+    if(!currentImage) return;
+    statusDot.className = 'status-dot working';
+    statusText.textContent = 'Resolving detail…';
+
+    setTimeout(()=>{
+      const scale = parseInt(ctrlScale.value,10);
+      const sharpenAmt = ctrlSharpen.value/300; // keep subtle for perf
+      const contrastAmt = 1 + ctrlContrast.value/150;
+      const saturateAmt = 1 + ctrlSaturate.value/120;
+
+      const srcW = currentImage.naturalWidth, srcH = currentImage.naturalHeight;
+
+      // Original canvas (unscaled, for comparison view — displayed at same box size)
+      originalCanvas.width = srcW;
+      originalCanvas.height = srcH;
+      const octx = originalCanvas.getContext('2d');
+      octx.drawImage(currentImage,0,0);
+
+      // Enhanced canvas: upscale + filter + sharpen convolution
+      const outW = srcW*scale, outH = srcH*scale;
+      enhancedCanvas.width = outW;
+      enhancedCanvas.height = outH;
+      const ectx = enhancedCanvas.getContext('2d');
+      ectx.imageSmoothingEnabled = true;
+      ectx.imageSmoothingQuality = 'high';
+      ectx.filter = `contrast(${contrastAmt}) saturate(${saturateAmt}) brightness(1.02)`;
+      ectx.drawImage(currentImage,0,0,outW,outH);
+      ectx.filter = 'none';
+
+      // apply sharpen convolution (cap size for performance)
+      let workData;
+      const maxDim = 900;
+      if(outW <= maxDim && outH <= maxDim){
+        workData = ectx.getImageData(0,0,outW,outH);
+        const sharpened = convolveSharpen(workData, sharpenAmt);
+        ectx.putImageData(sharpened,0,0);
+      }
+
+      // sync display sizing between original (cropped view) and enhanced
+      compareOriginal.style.width = '50%';
+
+      statusDot.className = 'status-dot done';
+      statusText.textContent = `Done — ${scale}× upscale · ${outW}×${outH}px`;
+
+      updateUsage();
+    }, 550);
+  }
+
+  function updateUsage(){
+    usedCount++;
+    localStorage.setItem('pixelforge_used', usedCount);
+    updateUsageNote();
+  }
+
+  reprocessBtn.addEventListener('click', ()=>{
+    if(isVideo){
+      statusText.textContent = 'Adjust sliders — video preview updates live';
+      return;
+    }
+    runEnhance();
+  });
+  [ctrlSharpen, ctrlContrast, ctrlSaturate, ctrlScale].forEach(c=>{
+    c.addEventListener('change', ()=>{ if(!isVideo) runEnhance(); });
+  });
+
+  downloadBtn.addEventListener('click', ()=>{
+    if(isVideo) return; // handled by recordEnhancedVideo assigned in handleVideoFile
+    const type = formatSelect.value;
+    const ext = type.split('/')[1];
+    enhancedCanvas.toBlob((blob)=>{
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `pixelforge-enhanced.${ext==='jpeg'?'jpg':ext}`;
+      a.click();
+    }, type, 1.0);
+  });
+
+  /* compare slider drag */
+  let dragging = false;
+  compareHandle.addEventListener('mousedown', ()=> dragging = true);
+  window.addEventListener('mouseup', ()=> dragging = false);
+  window.addEventListener('mousemove', (e)=>{
+    if(!dragging) return;
+    moveHandle(e.clientX);
+  });
+  compareHandle.addEventListener('touchstart', ()=> dragging = true, {passive:true});
+  window.addEventListener('touchend', ()=> dragging=false);
+  window.addEventListener('touchmove', (e)=>{
+    if(!dragging) return;
+    moveHandle(e.touches[0].clientX);
+  }, {passive:true});
+
+  function moveHandle(clientX){
+    const rect = compareStage.getBoundingClientRect();
+    let pct = ((clientX - rect.left)/rect.width)*100;
+    pct = Math.max(2, Math.min(98, pct));
+    compareHandle.style.left = pct+'%';
+    compareOriginal.style.width = pct+'%';
+  }
+})();
+</script>
+<!-- COLOR PICKER -->
+<div class="color-picker-wrap" id="colorPicker">
+  <div class="color-palette" id="colorPalette"></div>
+  <button class="color-picker-btn" id="colorPickerBtn" aria-label="Change theme color">
+    <svg class="cp-icon" viewBox="0 0 24 24"><path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10a2.5 2.5 0 0 0 2.5-2.5c0-.61-.23-1.21-.64-1.67A1.49 1.49 0 0 1 13.5 17c0-.83.67-1.5 1.5-1.5H18c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zM6.5 13a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+    <svg class="cp-close" viewBox="0 0 24 24" fill="var(--text)"><path d="M18.3 5.71a1 1 0 0 0-1.42 0L12 10.59 7.12 5.71A1 1 0 1 0 5.7 7.12L10.59 12l-4.88 4.88a1 1 0 1 0 1.42 1.42L12 13.41l4.88 4.88a1 1 0 0 0 1.42-1.42L13.41 12l4.88-4.88a1 1 0 0 0 0-1.41z"/></svg>
+  </button>
+</div>
+
+<script>
+(function(){
+  const themes = [
+    { name:'Teal',   bg:'#0A0B0D', surface:'#14171B', surface2:'#1B1F24', line:'#262B31', text:'#EDEFF2', muted:'#8B93A1', teal:'#5EEAD4', tealDim:'#2E7D6E', amber:'#FFB454' },
+    { name:'Blue',   bg:'#0B0D14', surface:'#131720', surface2:'#1A2030', line:'#263040', text:'#EDEFF6', muted:'#8B93B0', teal:'#60A5FA', tealDim:'#2563EB', amber:'#FBBF24' },
+    { name:'Purple', bg:'#0D0B14', surface:'#171320', surface2:'#201A30', line:'#302640', text:'#F0EDF6', muted:'#9B8BB0', teal:'#A78BFA', tealDim:'#7C3AED', amber:'#F472B6' },
+    { name:'Pink',   bg:'#140B0E', surface:'#201318', surface2:'#301A24', line:'#402636', text:'#F6EDF0', muted:'#B08B98', teal:'#F472B6', tealDim:'#DB2777', amber:'#FB923C' },
+    { name:'Orange', bg:'#14100B', surface:'#201A13', surface2:'#30261A', line:'#403626', text:'#F6F0ED', muted:'#B0A08B', teal:'#FB923C', tealDim:'#EA580C', amber:'#38BDF8' },
+    { name:'Red',    bg:'#140B0B', surface:'#201313', surface2:'#301A1A', line:'#402626', text:'#F6EDED', muted:'#B08B8B', teal:'#F87171', tealDim:'#DC2626', amber:'#FBBF24' },
+  ];
+
+  const wrap     = document.getElementById('colorPicker');
+  const btn      = document.getElementById('colorPickerBtn');
+  const palette  = document.getElementById('colorPalette');
+  const root     = document.documentElement;
+
+  let saved = localStorage.getItem('pixelforge-theme');
+  let activeIdx = saved ? parseInt(saved) : 0;
+
+  themes.forEach((t, i) => {
+    const sw = document.createElement('button');
+    sw.className = 'cp-swatch' + (i === activeIdx ? ' active' : '');
+    sw.style.background = t.teal;
+    sw.title = t.name;
+    sw.addEventListener('click', () => applyTheme(i));
+    palette.appendChild(sw);
+  });
+
+  btn.addEventListener('click', () => wrap.classList.toggle('open'));
+
+  document.addEventListener('click', (e) => {
+    if (!wrap.contains(e.target)) wrap.classList.remove('open');
+  });
+
+  function applyTheme(i){
+    activeIdx = i;
+    const t = themes[i];
+    root.style.setProperty('--bg', t.bg);
+    root.style.setProperty('--surface', t.surface);
+    root.style.setProperty('--surface-2', t.surface2);
+    root.style.setProperty('--line', t.line);
+    root.style.setProperty('--text', t.text);
+    root.style.setProperty('--muted', t.muted);
+    root.style.setProperty('--teal', t.teal);
+    root.style.setProperty('--teal-dim', t.tealDim);
+    root.style.setProperty('--amber', t.amber);
+    const h = parseInt(t.bg.slice(1,3),16), s = parseInt(t.bg.slice(3,5),16), l = parseInt(t.bg.slice(5,7),16);
+    document.querySelector('header').style.background = `rgba(${h},${s},${l},0.72)`;
+    localStorage.setItem('pixelforge-theme', i);
+    palette.querySelectorAll('.cp-swatch').forEach((s, j) => {
+      s.classList.toggle('active', j === i);
+    });
+  }
+
+  applyTheme(activeIdx);
+})();
+</script>
+</body>
+</html>
